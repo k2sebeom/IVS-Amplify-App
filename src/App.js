@@ -1,25 +1,29 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react"
 
-function App() {
+function LiveStream({streamKey}) {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <h2>key: {streamKey}</h2>
+  )
+}
+
+class App extends React.Component {
+  state = {
+    streams: [
+      "qweqweqw", "Qweqwdda", "afgdsfadfa", "saOokokoaaaaa"
+    ]
+  }
+
+  render() {
+    const streams = this.state.streams;
+    return (
+      <div>
+        <h1>Hello World</h1>
+        {streams.map(sKey => {
+          return <LiveStream streamKey={sKey} key={sKey}/>
+        })}
+      </div>
+    );
+  }
 }
 
 export default App;
