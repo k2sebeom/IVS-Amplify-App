@@ -1,4 +1,5 @@
 import React from "react"
+import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 
 function LiveStream({streamKey}) {
   return (
@@ -21,9 +22,10 @@ class App extends React.Component {
         {streams.map(sKey => {
           return <LiveStream streamKey={sKey} key={sKey}/>
         })}
+	<AmplifySignOut/>
       </div>
     );
   }
 }
 
-export default App;
+export default withAuthenticator(App);

@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "ivsamplifyapp6dadedfb": {
+      "service": "Cognito",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "customAuth": false
+    }
+  }
+}
