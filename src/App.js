@@ -17,7 +17,23 @@ class App extends React.Component {
 
   async printToken() {
     const session = await Auth.currentSession();
-    console.log(session.getIdToken().getJwtToken());
+    const token = session.getIdToken().getJwtToken();
+
+    var headers = new Headers()
+    headers.append("Content-Type", "application/json");
+    headers.append("Authorization", `Bearer ${token}`);
+
+    var raw = JSON.stringify({"firstName": "Jake", "lastName": "Peralta"});
+    var options = {
+      method: "POST",
+      headers: headers,
+      body: raw,
+      redirect: "follow"
+    }
+    let resp = await fetch("https://qqmwyopbu9.execute-api.us-west-2.amazonaws.com/dev", options);
+    let text = await resp.text();
+    let obj = JSON.parse(text).body;
+    console.log(obj.channels);
   }
 
   render() {
