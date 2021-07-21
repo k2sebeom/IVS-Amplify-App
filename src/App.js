@@ -2,6 +2,7 @@ import React from "react"
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { Auth } from 'aws-amplify'
 import './App.css'
+import ReactHLS from 'react-hls'
 
 const apiEndPoint = "https://30u94hmapi.execute-api.us-west-2.amazonaws.com/dev"
 let token = ""
@@ -24,7 +25,7 @@ async function callAPI(route, params, method, onComplete) {
     headers: headers,
     redirect: "follow"
   }
-  if (method != "GET") {
+  if (method !== "GET") {
     options.body = raw;
   }
 
@@ -34,19 +35,33 @@ async function callAPI(route, params, method, onComplete) {
   return JSON.parse(text)
 }
 
-function LiveStream({stream}) {
-  const {ChannelTitle, StreamStatus, StreamKey} = stream;
-  return (
-    <tr align="center" className="channel-item">
-      <td>{ChannelTitle.S}</td>
-      <td>{StreamKey.S}</td>
-      <td>{StreamStatus.S}</td>
-      <td><button>Join</button></td>
-    </tr>
-  )
+function LiveStream({stream, changeState}) {
+  const {ChannelTitle, StreamStatus, StreamKey, PlaybackUrl} = stream;
+  if (StreamStatus.S === "active") {
+    return (
+      <tr align="center" className="channel-item">
+        <td>{ChannelTitle.S}</td>
+        <td>{StreamKey.S}</td>
+        <td>{StreamStatus.S}</td>
+        <td><button onClick={()=>{
+          changeState(PlaybackUrl.S);
+        }}>Join</button></td>
+      </tr>
+    )
+  }
+  else {
+    return (
+      <tr align="center" className="channel-item">
+        <td>{ChannelTitle.S}</td>
+        <td>{StreamKey.S}</td>
+        <td>{StreamStatus.S}</td>
+        <td></td>
+      </tr>
+    )
+  }
 }
 
-function StreamTable({streams}) {
+function StreamTable({streams, changeState}) {
   return (
     <table border="1" className="channel-container" align="center">
         <thead>
@@ -59,7 +74,7 @@ function StreamTable({streams}) {
         </thead>
         <tbody>
           {streams.map(stream => {
-            return <LiveStream stream={stream} key={stream.StreamKey.S}/>
+            return <LiveStream stream={stream} key={stream.StreamKey.S} changeState={changeState}/>
           })}
         </tbody>
       </table>
@@ -161,6 +176,17 @@ class App extends React.Component {
     });
   }
 
+  componentDidUpdate() {
+    if (this.state.buttonState === 0) {
+      this.loadStreams((streams) => {
+        this.setState({
+          streams: streams,
+          buttonState: this.state.buttonState
+        });
+      });
+    }
+  }
+
   upperBanner() {
     return (
       <div>
@@ -186,10 +212,10 @@ class App extends React.Component {
     )
   }
 
-  mainWindow({buttonState, streams}) {
+  mainWindow({buttonState, streams, changeState}) {
     if(buttonState === 0) {
       return (
-        <StreamTable streams={streams} />
+        <StreamTable streams={streams} changeState={changeState}/>
       )
     }
     else if(buttonState === 1) {
@@ -197,15 +223,20 @@ class App extends React.Component {
         <h1>Loading...</h1>
       )
     }
-    else {
+    else if(buttonState === 2) {
       return (
         <CreateChannelForm />
+      )
+    }
+    else {
+      console.log(buttonState);
+      return (
+        <ReactHLS url={buttonState} autoplay={true} controls={false} />
       )
     }
   }
 
   render() {
-    const streams = this.state.streams;
     return (
       <div>
         <this.upperBanner />
@@ -215,7 +246,13 @@ class App extends React.Component {
             streams: this.state.streams
           })
         }}/>
-        < this.mainWindow buttonState={this.state.buttonState} streams={this.state.streams} />
+        < this.mainWindow buttonState={this.state.buttonState} streams={this.state.streams} 
+        changeState={(i) => {
+          this.setState({
+            buttonState: i,
+            streams: this.state.streams
+          });
+        }}/>
 	      <AmplifySignOut />
       </div>
     );
