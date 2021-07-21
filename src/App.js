@@ -52,7 +52,6 @@ function StreamTable({streams}) {
           <tr align="center" className="orange">
             <th>No.</th>
             <th>Channel Title</th>
-            <th>Owner</th>
             <th>Stream Key</th>
             <th>Status</th>
             <th>Join</th>
@@ -167,7 +166,7 @@ class App extends React.Component {
         }}>Channel List</button>
         <button className={buttonState === 1 ? "btn-secondary" : "btn-primary"} onClick={() => {
           onClick(1);
-        }}>My Channels</button>
+        }}>Assets</button>
         <button className={buttonState === 2 ? "btn-secondary" : "btn-primary"} onClick={() => {
           onClick(2);
         }}>Create Channel</button>
