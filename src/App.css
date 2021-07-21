@@ -32,3 +32,11 @@
 .channel-item {
     color: white;
 }
+
+label, input, select {
+    display: block;
+}
+
+label {
+    margin-bottom: 20px;
+}
