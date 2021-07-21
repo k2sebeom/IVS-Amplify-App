@@ -10,7 +10,7 @@ function LiveStream({streamKey}) {
 class App extends React.Component {
   state = {
     streams: [
-      "qweqweqw", "Qweqwdda", "afgdsfadfa", "saOokokoaaaaa"
+      "qweqweqw", "Qweqwdda", "afgdsfadfa", "saOokokoaaaaa", "stream/-key"
     ]
   }
 
