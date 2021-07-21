@@ -61,6 +61,32 @@ function LiveStream({stream, changeState}) {
   }
 }
 
+function VODAsset({asset, changeState}) {
+  const {ChannelTitle, Duration, PlaybackUrl} = asset;
+  if (PlaybackUrl.S.length > 0) {
+    return (
+      <tr align="center" className="channel-item">
+        <td>{ChannelTitle.S}</td>
+        <td>{Duration.N}</td>
+        <td>ready</td>
+        <td><button onClick={()=>{
+          changeState(PlaybackUrl.S);
+        }}>Join</button></td>
+      </tr>
+    )
+  }
+  else {
+    return (
+      <tr align="center" className="channel-item">
+        <td>{ChannelTitle.S}</td>
+        <td>{Duration.N}</td>
+        <td>processing</td>
+        <td></td>
+      </tr>
+    )
+  }
+}
+
 function StreamTable({streams, changeState}) {
   return (
     <table border="1" className="channel-container" align="center">
@@ -75,6 +101,26 @@ function StreamTable({streams, changeState}) {
         <tbody>
           {streams.map(stream => {
             return <LiveStream stream={stream} key={stream.StreamKey.S} changeState={changeState}/>
+          })}
+        </tbody>
+      </table>
+  )
+}
+
+function AssetTable({assets, changeState}) {
+  return (
+    <table border="1" className="channel-container" align="center">
+        <thead>
+          <tr align="center" className="orange">
+            <th>Recorded Channel</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Join</th>
+          </tr>
+        </thead>
+        <tbody>
+          {assets.map(asset => {
+            return <VODAsset asset={asset} key={asset.Prefix.S} changeState={changeState}/>
           })}
         </tbody>
       </table>
@@ -159,6 +205,7 @@ class CreateChannelForm extends React.Component {
 class App extends React.Component {
   state = {
     streams: [],
+    assets: [],
     buttonState: 0
   }
 
@@ -167,10 +214,23 @@ class App extends React.Component {
     updateState(resp.body.Items);
   }
 
+  async loadAssets(updateState) {
+    let resp = await callAPI("/assets", {}, "GET", () => {});
+    updateState(resp.body.Items);
+  }
+
   componentDidMount() {
     this.loadStreams((streams) => {
       this.setState({
         streams: streams,
+        assets: this.state.assets,
+        buttonState: this.state.buttonState
+      });
+    });
+    this.loadAssets((assets) => {
+      this.setState({
+        streams: this.state.streams,
+        assets: assets,
         buttonState: this.state.buttonState
       });
     });
@@ -181,6 +241,16 @@ class App extends React.Component {
       this.loadStreams((streams) => {
         this.setState({
           streams: streams,
+          assets: this.state.assets,
+          buttonState: this.state.buttonState
+        });
+      });
+    }
+    else if(this.state.buttonState === 1) {
+      this.loadAssets((assets) => {
+        this.setState({
+          streams: this.state.streams,
+          assets: assets,
           buttonState: this.state.buttonState
         });
       });
@@ -212,7 +282,7 @@ class App extends React.Component {
     )
   }
 
-  mainWindow({buttonState, streams, changeState}) {
+  mainWindow({buttonState, streams, assets, changeState}) {
     if(buttonState === 0) {
       return (
         <StreamTable streams={streams} changeState={changeState}/>
@@ -220,7 +290,7 @@ class App extends React.Component {
     }
     else if(buttonState === 1) {
       return (
-        <h1>Loading...</h1>
+        <AssetTable assets={assets} changeState={changeState}/>
       )
     }
     else if(buttonState === 2) {
@@ -243,13 +313,15 @@ class App extends React.Component {
         <this.buttonSection buttonState={this.state.buttonState} onClick={(i) => {
           this.setState({
             buttonState: i,
+            assets: this.state.assets,
             streams: this.state.streams
           })
         }}/>
-        < this.mainWindow buttonState={this.state.buttonState} streams={this.state.streams} 
+        < this.mainWindow buttonState={this.state.buttonState} streams={this.state.streams} assets={this.state.assets}
         changeState={(i) => {
           this.setState({
             buttonState: i,
+            assets: this.state.assets,
             streams: this.state.streams
           });
         }}/>
