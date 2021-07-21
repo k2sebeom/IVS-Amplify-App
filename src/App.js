@@ -22,8 +22,10 @@ async function callAPI(route, params, method, onComplete) {
   var options = {
     method: method,
     headers: headers,
-    body: raw,
     redirect: "follow"
+  }
+  if (method != "GET") {
+    options.body = raw;
   }
 
   let resp = await fetch(apiEndPoint + route, options);
@@ -32,14 +34,13 @@ async function callAPI(route, params, method, onComplete) {
   return JSON.parse(text)
 }
 
-function LiveStream({streamKey}) {
+function LiveStream({stream}) {
+  const {ChannelTitle, StreamStatus, StreamKey} = stream;
   return (
     <tr align="center" className="channel-item">
-      <td>1</td>
-      <td>CHannel 2</td>
-      <td>Owner</td>
-      <td>{streamKey}</td>
-      <td>active</td>
+      <td>{ChannelTitle.S}</td>
+      <td>{StreamKey.S}</td>
+      <td>{StreamStatus.S}</td>
       <td><button>Join</button></td>
     </tr>
   )
@@ -50,7 +51,6 @@ function StreamTable({streams}) {
     <table border="1" className="channel-container" align="center">
         <thead>
           <tr align="center" className="orange">
-            <th>No.</th>
             <th>Channel Title</th>
             <th>Stream Key</th>
             <th>Status</th>
@@ -58,8 +58,8 @@ function StreamTable({streams}) {
           </tr>
         </thead>
         <tbody>
-          {streams.map(sKey => {
-            return <LiveStream streamKey={sKey} key={sKey}/>
+          {streams.map(stream => {
+            return <LiveStream stream={stream} key={stream.StreamKey.S}/>
           })}
         </tbody>
       </table>
@@ -143,10 +143,22 @@ class CreateChannelForm extends React.Component {
 
 class App extends React.Component {
   state = {
-    streams: [
-      "qweqweqw", "Qweqwdda", "afgdsfadfa", "saOokokoaaaaa"
-    ],
+    streams: [],
     buttonState: 0
+  }
+
+  async loadStreams(updateState) {
+    let resp = await callAPI("/channels", {}, "GET", () => {});
+    updateState(resp.body.Items);
+  }
+
+  componentDidMount() {
+    this.loadStreams((streams) => {
+      this.setState({
+        streams: streams,
+        buttonState: this.state.buttonState
+      });
+    });
   }
 
   upperBanner() {
@@ -205,9 +217,6 @@ class App extends React.Component {
         }}/>
         < this.mainWindow buttonState={this.state.buttonState} streams={this.state.streams} />
 	      <AmplifySignOut />
-        <button onClick={() => {
-          callAPI("/channels", {"channelName": "NewCHannel", "channelType": "STANDARD", "latencyMode": "LOW"}, "POST");
-        }}>MakeCHannel</button>
       </div>
     );
   }
