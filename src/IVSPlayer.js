@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 
 
-function AWSIVSPlayer({url}) {
+function AWSIVSPlayer({url, onMetadata}) {
     const divEl = useRef(null);
     const videoEl = useRef(null);
 
@@ -19,6 +19,10 @@ function AWSIVSPlayer({url}) {
                 if (IVSPlayer.isPlayerSupported) {
                     // eslint-disable-next-line no-undef
                     const player = IVSPlayer.create();
+                    // eslint-disable-next-line no-undef
+                    player.addEventListener(IVSPlayer.PlayerEventType.TEXT_METADATA_CUE, (cue) => {
+                        onMetadata(cue);
+                    })
                     player.attachHTMLVideoElement(document.getElementById('video-player'));
                     player.load(url);
                     player.play();
