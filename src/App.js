@@ -63,15 +63,28 @@ function LiveStream({stream, changeState}) {
 
 function VODAsset({asset, changeState}) {
   const {ChannelTitle, Duration, PlaybackUrl} = asset;
-  return (
-    <tr align="center" className="channel-item">
-      <td>{ChannelTitle.S}</td>
-      <td>{Duration.N}</td>
-      <td><button onClick={()=>{
-        changeState({url: PlaybackUrl.S, type: "asset"});
-      }}>Play</button></td>
-    </tr>
-  )
+  if (Duration.N > 0) {
+    return (
+      <tr align="center" className="channel-item">
+        <td>{ChannelTitle.S}</td>
+        <td>{Duration.N}</td>
+        <td>ready</td>
+        <td><button onClick={()=>{
+          changeState({url: PlaybackUrl.S, type: "asset"});
+        }}>Play</button></td>
+      </tr>
+    )
+  }
+  else {
+    return (
+      <tr align="center" className="channel-item">
+        <td>{ChannelTitle.S}</td>
+        <td>--</td>
+        <td>processing</td>
+        <td></td>
+      </tr>
+    )
+  }
 }
 
 function StreamTable({streams, changeState}) {
@@ -101,6 +114,7 @@ function AssetTable({assets, changeState}) {
           <tr align="center" className="orange">
             <th>Recorded Channel</th>
             <th>Duration</th>
+            <th>Status</th>
             <th>Play</th>
           </tr>
         </thead>
@@ -292,7 +306,7 @@ class App extends React.Component {
       }
       else {
         return (
-          <ReactHLS url={buttonState.url} autoplay="true" controls="false" />
+          <ReactHLS url={buttonState.url} autoplay={true} controls={false} />
         )
       }
     }
