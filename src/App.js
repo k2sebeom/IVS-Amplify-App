@@ -44,7 +44,7 @@ function LiveStream({stream, changeState}) {
         <td>{StreamKey.S}</td>
         <td>{StreamStatus.S}</td>
         <td><button onClick={()=>{
-          changeState(PlaybackUrl.S);
+          changeState({url: PlaybackUrl.S, type: "stream"});
         }}>Join</button></td>
       </tr>
     )
@@ -63,28 +63,15 @@ function LiveStream({stream, changeState}) {
 
 function VODAsset({asset, changeState}) {
   const {ChannelTitle, Duration, PlaybackUrl} = asset;
-  if (PlaybackUrl.S.length > 0) {
-    return (
-      <tr align="center" className="channel-item">
-        <td>{ChannelTitle.S}</td>
-        <td>{Duration.N}</td>
-        <td>ready</td>
-        <td><button onClick={()=>{
-          changeState(PlaybackUrl.S);
-        }}>Join</button></td>
-      </tr>
-    )
-  }
-  else {
-    return (
-      <tr align="center" className="channel-item">
-        <td>{ChannelTitle.S}</td>
-        <td>{Duration.N}</td>
-        <td>processing</td>
-        <td></td>
-      </tr>
-    )
-  }
+  return (
+    <tr align="center" className="channel-item">
+      <td>{ChannelTitle.S}</td>
+      <td>{Duration.N}</td>
+      <td><button onClick={()=>{
+        changeState({url: PlaybackUrl.S, type: "asset"});
+      }}>Play</button></td>
+    </tr>
+  )
 }
 
 function StreamTable({streams, changeState}) {
@@ -114,8 +101,7 @@ function AssetTable({assets, changeState}) {
           <tr align="center" className="orange">
             <th>Recorded Channel</th>
             <th>Duration</th>
-            <th>Status</th>
-            <th>Join</th>
+            <th>Play</th>
           </tr>
         </thead>
         <tbody>
@@ -299,10 +285,16 @@ class App extends React.Component {
       )
     }
     else {
-      console.log(buttonState);
-      return (
-        <ReactHLS url={buttonState} autoplay={true} controls={false} />
-      )
+      if (buttonState.type === "asset") {
+        return (
+          <ReactHLS url={buttonState.url} />
+        )
+      }
+      else {
+        return (
+          <ReactHLS url={buttonState.url} autoplay="true" controls="false" />
+        )
+      }
     }
   }
 
