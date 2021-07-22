@@ -3,6 +3,7 @@ import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { Auth } from 'aws-amplify'
 import './App.css'
 import ReactHLS from 'react-hls'
+import AWSIVSPlayer from "./IVSPlayer.js";
 
 const apiEndPoint = "https://30u94hmapi.execute-api.us-west-2.amazonaws.com/dev"
 let token = ""
