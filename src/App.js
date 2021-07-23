@@ -334,6 +334,7 @@ class App extends React.Component {
             streams: this.state.streams
           });
         }}/>
+        <h3 className="orange">RTMPS Endpoint: rtmps://af69049e8f9d.global-contribute.live-video.net:443/app</h3>
 	      <AmplifySignOut />
       </div>
     );
