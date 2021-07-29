@@ -63,31 +63,18 @@ function LiveStream({stream, changeState}) {
 }
 
 function VODAsset({asset, changeState}) {
-  const {ChannelTitle, Duration, PlaybackUrl, Prefix} = asset;
-  if (Duration.N > 0) {
-    return (
-      <tr align="center" className="channel-item">
-        <td>{ChannelTitle.S}</td>
-        <td>{Duration.N}</td>
-        <td>ready</td>
-        <td><button onClick={()=>{
-          changeState({url: PlaybackUrl.S, type: "asset"});
-        }}>Play</button></td>
-        <td><a href={`https://d2pktjclwgcows.cloudfront.net/mp4/${Prefix.S}/output.mp4`} download>Download</a></td>
-      </tr>
-    )
-  }
-  else {
-    return (
-      <tr align="center" className="channel-item">
-        <td>{ChannelTitle.S}</td>
-        <td>--</td>
-        <td>processing</td>
-        <td></td>
-        <td></td>
-      </tr>
-    )
-  }
+  const {ChannelTitle, MediaDuration, PlaybackUrl, DownloadStatus, DownloadUrl} = asset;
+  return (
+    <tr align="center" className="channel-item">
+      <td>{ChannelTitle.S}</td>
+      <td>{MediaDuration.S == "0" ? "--" : MediaDuration.S}</td>
+      <td>{MediaDuration.S == "0" ? "processing" : "ready"}</td>
+      <td>{MediaDuration.S == "0" ? "" : <button onClick={()=>{
+        changeState({url: PlaybackUrl.S, type: "asset"});
+      }}>Play</button>}</td>
+      <td>{DownloadStatus.S == "ready" ? <a href={DownloadUrl.S} download>Download</a> : "processing"}</td>
+    </tr>
+  )
 }
 
 function StreamTable({streams, changeState}) {
