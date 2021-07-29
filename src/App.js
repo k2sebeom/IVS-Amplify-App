@@ -63,7 +63,7 @@ function LiveStream({stream, changeState}) {
 }
 
 function VODAsset({asset, changeState}) {
-  const {ChannelTitle, Duration, PlaybackUrl} = asset;
+  const {ChannelTitle, Duration, PlaybackUrl, Prefix} = asset;
   if (Duration.N > 0) {
     return (
       <tr align="center" className="channel-item">
@@ -73,6 +73,7 @@ function VODAsset({asset, changeState}) {
         <td><button onClick={()=>{
           changeState({url: PlaybackUrl.S, type: "asset"});
         }}>Play</button></td>
+        <td><a href={`https://d2pktjclwgcows.cloudfront.net/mp4/${Prefix.S}/output.mp4`} download>Download</a></td>
       </tr>
     )
   }
@@ -82,6 +83,7 @@ function VODAsset({asset, changeState}) {
         <td>{ChannelTitle.S}</td>
         <td>--</td>
         <td>processing</td>
+        <td></td>
         <td></td>
       </tr>
     )
@@ -117,6 +119,7 @@ function AssetTable({assets, changeState}) {
             <th>Duration</th>
             <th>Status</th>
             <th>Play</th>
+            <th>Download</th>
           </tr>
         </thead>
         <tbody>
