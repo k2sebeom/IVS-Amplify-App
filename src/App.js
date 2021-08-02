@@ -297,9 +297,10 @@ class App extends React.Component {
       }
       else {
         return (
-          <AWSIVSPlayer url={buttonState.url} onMetadata={(cue) => {
-            console.log(cue.text);
-          }} />
+          // <AWSIVSPlayer url={buttonState.url} onMetadata={(cue) => {
+          //   console.log(cue.text);
+          // }} />
+          <ReactHLS url={buttonState.url} autoplay/>
         )
       }
     }
