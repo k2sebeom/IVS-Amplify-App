@@ -37,12 +37,14 @@ async function callAPI(route, params, method, onComplete) {
 }
 
 function LiveStream({stream, changeState}) {
-  const {ChannelTitle, StreamStatus, StreamKey, PlaybackUrl, ID} = stream;
+  const {ChannelTitle, StreamStatus, StreamKey, PlaybackUrl, ID, ChannelType, ChannelMode} = stream;
   if (StreamStatus.S === "active") {
     return (
       <tr align="center" className="channel-item">
         <td>{ChannelTitle.S}</td>
         <td>{StreamKey.S}</td>
+        <td>{ChannelMode.S}</td>
+        <td>{ChannelType.S}</td>
         <td>{StreamStatus.S}</td>
         <td><button onClick={()=>{
           changeState({url: PlaybackUrl.S, type: "stream", arn: ID.S});
@@ -55,6 +57,8 @@ function LiveStream({stream, changeState}) {
       <tr align="center" className="channel-item">
         <td>{ChannelTitle.S}</td>
         <td>{StreamKey.S}</td>
+        <td>{ChannelMode.S}</td>
+        <td>{ChannelType.S}</td>
         <td>{StreamStatus.S}</td>
         <td></td>
       </tr>
@@ -84,6 +88,8 @@ function StreamTable({streams, changeState}) {
           <tr align="center" className="orange">
             <th>Channel Title</th>
             <th>Stream Key</th>
+            <th>Latency</th>
+            <th>Type</th>
             <th>Status</th>
             <th>Join</th>
           </tr>
