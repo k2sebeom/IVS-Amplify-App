@@ -2,7 +2,7 @@ import React from "react"
 import { withAuthenticator, AmplifySignOut } from '@aws-amplify/ui-react';
 import { Auth } from 'aws-amplify'
 import './App.css'
-import ReactHLS from 'react-hls'
+// import ReactHLS from 'react-hls'
 import AWSIVSPlayer from "./IVSPlayer.js";
 
 const apiEndPoint = "https://30u94hmapi.execute-api.us-west-2.amazonaws.com/dev"
@@ -37,7 +37,7 @@ async function callAPI(route, params, method, onComplete) {
 }
 
 function LiveStream({stream, changeState}) {
-  const {ChannelTitle, StreamStatus, StreamKey, PlaybackUrl} = stream;
+  const {ChannelTitle, StreamStatus, StreamKey, PlaybackUrl, ID} = stream;
   if (StreamStatus.S === "active") {
     return (
       <tr align="center" className="channel-item">
@@ -45,7 +45,7 @@ function LiveStream({stream, changeState}) {
         <td>{StreamKey.S}</td>
         <td>{StreamStatus.S}</td>
         <td><button onClick={()=>{
-          changeState({url: PlaybackUrl.S, type: "stream"});
+          changeState({url: PlaybackUrl.S, type: "stream", arn: ID.S});
         }}>Join</button></td>
       </tr>
     )
@@ -67,12 +67,12 @@ function VODAsset({asset, changeState}) {
   return (
     <tr align="center" className="channel-item">
       <td>{ChannelTitle.S}</td>
-      <td>{MediaDuration.S == "0" ? "--" : MediaDuration.S}</td>
-      <td>{MediaDuration.S == "0" ? "processing" : "ready"}</td>
-      <td>{MediaDuration.S == "0" ? "" : <button onClick={()=>{
+      <td>{MediaDuration.S === "0" ? "--" : MediaDuration.S}</td>
+      <td>{MediaDuration.S === "0" ? "processing" : "ready"}</td>
+      <td>{MediaDuration.S === "0" ? "" : <button onClick={()=>{
         changeState({url: PlaybackUrl.S, type: "asset"});
       }}>Play</button>}</td>
-      <td>{DownloadStatus.S == "ready" ? <a href={DownloadUrl.S} download>Download</a> : "processing"}</td>
+      <td>{DownloadStatus.S === "ready" ? <a href={DownloadUrl.S} download>Download</a> : "processing"}</td>
     </tr>
   )
 }
@@ -116,6 +116,76 @@ function AssetTable({assets, changeState}) {
         </tbody>
       </table>
   )
+}
+
+class SendQuizForm extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      question: "",
+      answer: "TRUE",
+      arn: props.arn
+    }
+    this.updateAnswer = this.updateAnswer.bind(this);
+    this.updateText = this.updateText.bind(this);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this._text = React.createRef();
+    this._select = React.createRef();
+  }
+
+  updateText(event) {
+      this.setState({
+          question: event.target.value,
+          answer: this.state.answer,
+          arn: this.state.arn
+      })
+  }
+
+  updateAnswer(event) {
+      this.setState({
+          question: this.state.question,
+          answer: event.target.value,
+          arn: this.state.arn
+      })
+  }
+
+  async handleSubmit(event) {
+    event.preventDefault();
+    let resp = await callAPI("/metadata", {
+      arn: this.state.arn,
+      metadata: JSON.stringify({
+        text: this.state.question,
+        answer: this.state.answer
+      })
+    }, "POST", () => {
+      this._text.current.value = "";
+      this._select.current.value = "TRUE";
+      this.setState({
+        question: "",
+        answer: "TRUE"
+      })
+    });
+    console.log(resp);
+  }
+
+  render() {
+    return (
+      <form onSubmit={this.handleSubmit}>
+        <label className="orange">
+          T/F Question:
+          <input ref={this._text} type="text" value={this.state.question} onChange={this.updateText} />
+        </label>
+        <label className="orange">
+          Answer
+          <select ref={this._select} value={this.state.answer} onChange={this.updateAnswer}>
+            <option value="TRUE">TRUE</option>
+            <option value="FALSE">FALSE</option>
+          </select>
+        </label>
+        <input className="btn-primary" type="submit" value="Post Quiz" />
+      </form>
+    )
+  }
 }
 
 class CreateChannelForm extends React.Component {
@@ -192,57 +262,144 @@ class CreateChannelForm extends React.Component {
   }
 }
 
+class Quiz extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      content: props.content,
+      status: 0 // 0 question 1: right 2: wrong
+    }
+  }
+
+  componentWillReceiveProps(props) {
+    this.setState({
+      content: props.content,
+      status: 0
+    })
+  }
+
+  render() {
+    if(this.state.content == null) {
+      return (
+        <p></p>
+      )
+    }
+    if(this.state.status === 0) {
+      return (
+        <div className="quiz-container">
+          <h2 className="orange">{this.state.content.text}</h2>
+          <button className="btn-secondary" onClick={() => {
+            if(this.state.content.answer === "TRUE") {
+              this.setState({
+                content: this.state.content,
+                status: 1
+              })
+            }
+            else {
+              this.setState({
+                content: this.state.content,
+                status: 2
+              })
+            }
+            setTimeout(() => {
+              this.setState({
+                content: null,
+                status: 0
+              })
+            }, 3000)
+          }}>TRUE</button>
+          <button className="btn-secondary"onClick={() => {
+            if(this.state.content.answer === "FALSE") {
+              this.setState({
+                content: this.state.content,
+                status: 1
+              })
+            }
+            else {
+              this.setState({
+                content: this.state.content,
+                status: 2
+              })
+            }
+            setTimeout(() => {
+              this.setState({
+                content: null,
+                status: 0
+              })
+            }, 3000)
+          }}>FALSE</button>
+        </div>
+      )
+    }
+    else if(this.state.status === 1) {
+      return (
+        <h2 className="orange quiz-container">Congratulations!</h2>
+      )
+    }
+    else {
+      return (
+        <h2 className="orange quiz-container">Wrong!!</h2>
+      )
+    }
+  }
+}
 
 class App extends React.Component {
-  state = {
-    streams: [],
-    assets: [],
-    buttonState: 0
+  constructor(props) {
+    super(props);
+    this.state = {
+      streams: [],
+      assets: [],
+      buttonState: 0,
+      quiz: null,
+    }
+    this.updateState = this.updateState.bind(this);
+    this.mainWindow = this.mainWindow.bind(this);
   }
 
-  async loadStreams(updateState) {
+  updateState(props) {
+    let temp = this.state;
+    Object.keys(props).forEach((key) => {
+      temp[key] = props[key];
+    })
+    this.setState(temp);
+  }
+
+  async loadStreams(completion) {
     let resp = await callAPI("/channels", {}, "GET", () => {});
-    updateState(resp.body.Items);
+    completion(resp.body.Items);
   }
 
-  async loadAssets(updateState) {
+  async loadAssets(completion) {
     let resp = await callAPI("/assets", {}, "GET", () => {});
-    updateState(resp.body.Items);
+    completion(resp.body.Items);
   }
 
   componentDidMount() {
     this.loadStreams((streams) => {
-      this.setState({
-        streams: streams,
-        assets: this.state.assets,
-        buttonState: this.state.buttonState
+      this.updateState({
+        streams: streams
       });
     });
     this.loadAssets((assets) => {
-      this.setState({
-        streams: this.state.streams,
-        assets: assets,
-        buttonState: this.state.buttonState
-      });
+      this.updateState({
+        assets: assets
+      })
     });
   }
 
   componentDidUpdate() {
     if (this.state.buttonState === 0) {
       this.loadStreams((streams) => {
-        this.setState({
-          streams: streams,
-          assets: this.state.assets,
-          buttonState: this.state.buttonState
-        });
+        this.updateState({
+          streams: streams
+        })
       });
     }
     else if(this.state.buttonState === 1) {
       this.loadAssets((assets) => {
-        this.setState({
-          streams: this.state.streams,
-          assets: assets,
-          buttonState: this.state.buttonState
+        this.updateState({
+          assets: assets
         });
       });
     }
@@ -292,15 +449,34 @@ class App extends React.Component {
     else {
       if (buttonState.type === "asset") {
         return (
-          <ReactHLS url={buttonState.url} />
+          <div className="video-container">
+            <AWSIVSPlayer url={buttonState.url} onMetadata={(cue) => {
+              console.log(cue.text);
+              this.updateState({
+                quiz: JSON.parse(cue.text)
+              });
+            }} />
+            <Quiz content={this.state.quiz} />
+         </div>
         )
       }
       else {
         return (
-          // <AWSIVSPlayer url={buttonState.url} onMetadata={(cue) => {
-          //   console.log(cue.text);
-          // }} />
-          <ReactHLS url={buttonState.url} autoplay/>
+          <div>
+            <div className="video-container">
+              <AWSIVSPlayer url={buttonState.url} onMetadata={(cue) => {
+                console.log(cue.text);
+                this.updateState({
+                  quiz: JSON.parse(cue.text)
+                });
+              }} />
+              <Quiz content={this.state.quiz} />
+            </div>
+            <br></br>
+            <h3 className="orange">Streamer Tool</h3>
+            <SendQuizForm arn={buttonState.arn}/>
+          </div>
+          // <ReactHLS url={buttonState.url} autoplay/>
         )
       }
     }

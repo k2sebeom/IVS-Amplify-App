@@ -45,7 +45,7 @@ function AWSIVSPlayer({url, onMetadata}) {
                 playsInline
                 autoPlay
                 height={300}
-                controls={false}
+                controls={true}
             />
         </div>
     );
