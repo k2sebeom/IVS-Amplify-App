@@ -496,7 +496,8 @@ class App extends React.Component {
           this.setState({
             buttonState: i,
             assets: this.state.assets,
-            streams: this.state.streams
+            streams: this.state.streams,
+            quiz: null
           })
         }}/>
         < this.mainWindow buttonState={this.state.buttonState} streams={this.state.streams} assets={this.state.assets}
