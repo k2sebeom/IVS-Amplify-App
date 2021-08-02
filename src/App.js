@@ -479,7 +479,7 @@ class App extends React.Component {
               <Quiz content={this.state.quiz} />
             </div>
             <br></br>
-            <h3 className="orange">Streamer Tool</h3>
+            <h3 className="orange">Streamer Tool (Use only when you are streaming)</h3>
             <SendQuizForm arn={buttonState.arn}/>
           </div>
           // <ReactHLS url={buttonState.url} autoplay/>
